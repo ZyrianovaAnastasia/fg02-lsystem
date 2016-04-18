@@ -1,0 +1,155 @@
+<!doctype html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<meta http-equiv="Cache-Control" content="no-cache"/>
+	<title>LSystem</title>
+	<script>
+
+var canvas;
+var context;
+var angle = 0;
+
+function Point(x, y, a){
+	this.x=x;
+	this.y=y;
+	this.a=a;
+}
+
+function print(x,y,x1,y1, lineWidth, color){
+	context.lineWidth = lineWidth;
+	context.strokeStyle = color;
+	context.beginPath();
+	context.moveTo(x,y);
+	context.lineTo(x1,y1);
+	context.stroke();
+}
+
+function lSystem(){
+	canvas = document.getElementById("canvas1");
+	var canvasHeight = parseInt(canvas.getAttribute("height"));
+	var canvasWidth = parseInt(canvas.getAttribute("width"));
+	context = canvas.getContext('2d');
+	ReadAlphabet();
+}
+
+function runSnowflake(){
+	fillGapesSnowflake();
+	lSystem();
+}
+
+function runBush(){
+	fillGapesBush();
+	lSystem();
+}
+
+function applyRule(str){
+	var rule=document.getElementById("rules").value;
+	var result="";
+	for (var i = 0; i < str.length; ++i){
+		var s = str.charAt(i);
+		if(s == 'F'){
+			result += rule;
+		}
+		else{
+			result += str.charAt(i);
+		}
+	}
+	return result;
+}
+
+function getFullAxiom(axiom, count){
+	for(var i = 0; i < count; ++i){
+		axiom=applyRule(axiom);
+	}
+	return axiom;
+}
+
+function onAngleChange(obj){
+	angle=-Math.PI/(obj.value);
+}
+
+function ReadAlphabet(){
+	context.fillStyle = "#FEFFBF";
+	context.fillRect(0, 0, canvas.width, canvas.height);
+	var step=parseInt(document.getElementById("step").value);
+	var stack=[];
+	var axiom=document.getElementById("axiom").value;
+	var n=parseInt(document.getElementById("n").value);
+	axiom=getFullAxiom(axiom, n);
+	var x=parseInt(document.getElementById("x").value);
+	var y=parseInt(document.getElementById("y").value);
+	var ang=-Math.PI/2;
+	angle = Math.PI / parseInt(document.getElementById("angle").value);
+	debugger;
+	for(var i = 0; i < axiom.length; ++i){
+		switch(axiom.charAt(i)){
+			case 'F': 
+				var x1 = x + step * Math.cos(ang);
+				var y1 = y + step * Math.sin(ang);
+				print(x, y, x1, y1, 1, "#6BAABF");
+				x = x1;
+				y = y1;
+				break;	
+
+			case '[': 
+				stack.push(new Point(x,y,ang)); break;
+			case ']': 
+				var tmp=stack.pop();
+				x=tmp.x;
+				y=tmp.y;
+				ang=tmp.a;
+				break;
+			case '+':
+			 	ang -= angle; break;
+			case '-':
+			 	ang += angle; break;
+		}
+	}
+}
+
+function fillGapesSnowflake(){
+	var angle =document.getElementById("angle");
+	angle.value=3;
+	var axiom=document.getElementById("axiom");
+	axiom.value="[F]+[F]+[F]+[F]+[F]+[F]";
+	var rule=document.getElementById("rules");
+	rule.value="F[+FF][-FF]FF[+F][-F]FF";
+	var step=document.getElementById("step");
+	step.value=5;
+	var n=document.getElementById("n");
+	n.value=2;
+}
+
+function fillGapesBush(){
+	var angle =document.getElementById("angle");
+	angle.value=8;
+	var axiom=document.getElementById("axiom");
+	axiom.value="F";
+	var rule=document.getElementById("rules");
+	rule.value=" FF+[+F-F-F]-[-F+F+F]";
+	var step=document.getElementById("step");
+	step.value=6;
+	var n=document.getElementById("n");
+	n.value=4;
+}
+
+</script>
+<body bgcolor="#FEFFBF">
+  <canvas height='600' width='900' id='canvas1'></canvas>
+   <table>
+ </br>
+  	x:<input type="number" id="x" value="200"></input></br>
+  	y:<input type="number" id="y" value="400"></input></br>
+  	угол:<input type="number" id="angle" onchange="onAngleChange(this)"></input></br>
+  	аксиома:<input type="text" id="axiom"></input></br>
+    правило:<input type="text" id="rules"></input></br>
+    длина шага:<input type="number" id="step" rows=1></input></br>
+   количество итераций: <input type="number" id="n" rows=1></input></br>
+  </table>
+   <input type="button" value = "draw snowflake" onclick= "runSnowflake()"></br>
+   <input type="button" value = "draw bush" onclick= "runBush()"></br>
+
+</body>
+</html>
+
